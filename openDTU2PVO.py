@@ -3,7 +3,7 @@
 #
 # @file     openDTU2PVO.py
 # @author   Matthias Klemm <Matthias_Klemm@gmx.net>
-# @version  1.1.0
+# @version  1.1.1
 # @Python   >= 3.2 required
 # @date     February, 2024
 #
@@ -17,7 +17,7 @@
 #
 #
 # @brief    A script to gather data from an OpenDTU device and upload it to www.pvoutput.org.
-#           Provide OpenDTU IP address, inverter serial number, pvoutput API key and pvoutput system id in the config file.
+#           Provide OpenDTU IP address, inverter serial number(s), pvoutput API key and pvoutput system id in the config file.
 
 
 import configparser
@@ -83,6 +83,16 @@ for invNumber in range(1, nInv, 1):
             # try old config file format
             try:
                 openDTU_sn = int(configParser.get('openDTU', 'sn'))
+                for i in range(7, 13, 1):
+                    tmp = configParser.get('pvoutput', 'pvo_v' + str(i))
+                    if isValidString(tmp):
+                        try:
+                            tmpS = tmp.split('.')
+                            if len(tmpS) == 3:
+                                configParser.set('pvoutput', 'pvo_v' + str(i), 'serial_number1.' + tmp)
+                        except Exception as err:
+                            logging.warning("Optional pvoutput parameter pvo_v%d failed: %s", i, err)
+                            continue
             except Exception as err2:
                 logging.error('Could not find serial_number1 in openDTU section of config.cfg')
                 print('Could not find serial_number1 in openDTU section of config.cfg')
